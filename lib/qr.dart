@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class QRDeneme extends StatelessWidget {
   @override
@@ -24,16 +25,18 @@ class MyPageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFffe8df),
-      body: new SafeArea(
-        left: false,
-        right: false,
-        bottom: false,
-        child: Center(
-        ),
-      ),
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
+    return MaterialApp(
+      title: 'QR.Flutter',
+      theme: ThemeData.light(),
+      debugShowCheckedModeBanner: false,
     );
+
   }
 
   @override
