@@ -29,6 +29,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
   qr_flutter: ^3.2.0
+  flutter_json_widget: ^1.0.2
+  convex_bottom_bar: ^2.2.1
+  sticky_and_expandable_list: ^0.2.1
+  expandable: ^4.1.4
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +51,8 @@ flutter:
 
   assets:
     - assets/icon.jpg
+    - assets/resto1.jpg
+    - assets/hamburger.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -78,3 +84,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  fonts:
+    - family: Exo
+      fonts:
+        - asset: fonts/Exo2-Regular.otf

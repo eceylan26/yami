@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:yami/institutionPage.dart';
 import 'package:yami/qr_code_scanner.dart';
+import 'package:yami/src/qr_code_variables.dart';
+import 'package:flutter_json_widget/flutter_json_widget.dart';
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
 void main() => runApp(MaterialApp(home: QRViewExample()));
 
@@ -27,8 +31,10 @@ class _QRViewExampleState extends State<QRViewExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       body: Column(
         children: <Widget>[
+
           Expanded(
             flex: 4,
             child: QRView(
@@ -117,6 +123,13 @@ class _QRViewExampleState extends State<QRViewExample> {
                         child: RaisedButton(
                           onPressed: () {
                             controller?.resumeCamera();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    InstitutionPage(qrCodeResult: "http://yami.com/stackhouse/2"),
+                              ),
+                            );
                           },
                           child: Text('resume', style: TextStyle(fontSize: 20)),
                         ),
@@ -130,6 +143,14 @@ class _QRViewExampleState extends State<QRViewExample> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // dummy code
+
   }
 
   bool _isFlashOn(String current) {
