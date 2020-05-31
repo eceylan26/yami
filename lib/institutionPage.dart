@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,8 @@ import 'package:flutter_json_widget/flutter_json_widget.dart';
 import 'package:yami/src/qr_code_variables.dart';
 import 'package:sticky_and_expandable_list/sticky_and_expandable_list.dart';
 import 'mock_data.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class InstitutionPage extends StatefulWidget {
   final qrCodeResult;
@@ -24,8 +28,7 @@ class InstitutionPageState extends State<InstitutionPage> {
   String qrCodeResult;
   List<String> items;
   ElementData menuData;
-  var sectionList ;
-
+  var sectionList;
 
   InstitutionPageState(this.qrCodeResult);
 
@@ -59,8 +62,10 @@ class InstitutionPageState extends State<InstitutionPage> {
             builder: SliverExpandableChildDelegate<String, ExampleSection>(
               sectionList: sectionList,
               itemBuilder: (context, sectionIndex, itemIndex, index) {
-                String myitem = menuData.data[sectionIndex].element[itemIndex].elementName;
-                String price = menuData.data[sectionIndex].element[itemIndex].price;
+                String myitem =
+                    menuData.data[sectionIndex].element[itemIndex].elementName;
+                String price =
+                    menuData.data[sectionIndex].element[itemIndex].price;
                 return GestureDetector(
                   onTap: () {
                     print(sectionIndex);
@@ -91,7 +96,8 @@ class InstitutionPageState extends State<InstitutionPage> {
                                   children: <Widget>[
                                     Align(
                                       alignment: Alignment.centerRight,
-                                      child: Text(myitem,
+                                      child: Text(
+                                        myitem,
                                         style: TextStyle(
                                           fontFamily: 'Exo',
                                           fontWeight: FontWeight.bold,
@@ -124,7 +130,6 @@ class InstitutionPageState extends State<InstitutionPage> {
                     ),
                   ),
                 );
-
               },
               sectionBuilder: (context, containerInfo) => _SectionWidget(
                 section: sectionList[containerInfo.sectionIndex],
@@ -160,34 +165,27 @@ class InstitutionPageState extends State<InstitutionPage> {
     items.add("Çay");
     items.add("Kış Çayı");
 
-    
     //dummy json
     var myjson2 =
-        '''{"Categories":[{"id":1,"name":"Drink","Element":[{"name":"Tea","price":"5 TL","info":"Early Gray"},{"name":"Coffee Americano","price":"10 TL","info":"Filtre Coffee"}]},{"id":2,"name":"Food","Element":[{"name":"Salata","price":"10 TL","info":"Domates,Biber,Sogan"},{"name":"Bonfile Et","price":"25 TL","info":"Patetes Kızartmasıyla"}]},{"id":3,"name":"Dessert","Element":[{"name":"Mozail Tatlı","price":"15 TL","info":"Çikolata kaplı"},{"name":"CheeseCake","price":"20 TL","info":"Cafemizin gözdesi"}]}]}''';
+        '''{"VatozAS":[{"id":1,"name":"Drink","Element":[{"name":"Tea","price":"5 TL","info":"Early Gray"},{"name":"Coffee Americano","price":"10 TL","info":"Filtre Coffee"}]},{"id":2,"name":"Food","Element":[{"name":"Salata","price":"10 TL","info":"Domates,Biber,Sogan"},{"name":"Bonfile Et","price":"25 TL","info":"Patetes Kızartmasıyla"}]},{"id":3,"name":"Dessert","Element":[{"name":"Mozail Tatlı","price":"15 TL","info":"Çikolata kaplı"},{"name":"CheeseCake","price":"20 TL","info":"Cafemizin gözdesi"}]}]}''';
     jsonObj = jsonDecode(myjson2);
 
-
-    final jsonResponse=json.decode(myjson2);
-
+    final jsonResponse = json.decode(myjson2);
+    print("erson");
+    print(jsonResponse);
+    print("erson");
     menuData = new ElementData.fromJson(jsonResponse);
-    List<String> categoriesList = new List<String>();
-    categoriesList = getCategories(menuData);
 
-    for(int i = 0; i<categoriesList.length ;i++){
-      print(categoriesList[i]);
-    }
+    sectionList = MockData.getExampleSections(
+        menuData.data.length, menuData.data[0].element.length, menuData);
 
-    sectionList = MockData.getExampleSections(menuData.data.length, menuData.data[0].element.length,menuData);
-
-
-
+    FirebaseTodos.getTodoStream("-KriJ8Sg4lWIoNswKWc4");
   }
 
-  List<String> getCategories(ElementData elem){
-
+  List<String> getCategories(ElementData elem) {
     List<String> categories = new List<String>();
 
-    for(int i = 0 ; i < elem.data.length;i++){
+    for (int i = 0; i < elem.data.length; i++) {
       categories.add(elem.data[i].catName.toString());
     }
 
@@ -347,7 +345,6 @@ class __SectionWidgetState extends State<_SectionWidget>
         }
       });
     }
-
   }
 
   Widget _buildContent() {
@@ -358,3 +355,60 @@ class __SectionWidgetState extends State<_SectionWidget>
   }
 }
 
+class FirebaseTodos {
+  /// FirebaseTodos.getTodoStream("-KriJ8Sg4lWIoNswKWc4", _updateTodo)
+  /// .then((StreamSubscription s) => _subscriptionTodo = s);
+  static Future<StreamSubscription<Event>> getTodoStream(String todoKey) async {
+    /*StreamSubscription<Event> subscription = FirebaseDatabase.instance
+        .reference()
+        .child("VatozAS")
+        .onValue.listen((Event event) {
+            print("-----------");
+            print(event.snapshot.value);
+
+
+    });*/
+
+    final DBREf = FirebaseDatabase.instance.reference().child("MCDonalds");
+
+    DBREf.once().then((DataSnapshot snapshot) {
+      List<dynamic> list = snapshot.value;
+
+      Map<dynamic, dynamic> map = Map.from(list[0]);
+
+      final Map<String, dynamic> data = Map.from(map);
+
+      var mylist = data['Element'] as List;
+
+      print(mylist.toString());
+
+      Category aa = new Category.fromJson(data);
+
+      print(aa.catName);
+    });
+
+    /*DatabaseReference post = FirebaseDatabase.instance
+        .reference()
+        .child("VatozAS");
+
+    post.once().then((DataSnapshot snap){
+      print("errrrr");
+      print(snap.value.toString());
+      List<String> aa = List.castFrom(snap.value);
+      print("errrrr");
+      //ElementData menu = new ElementData.fromJson(snap.value);
+    });*/
+
+    /*//final jsonResponse=json.decode(event.snapshot);
+        //print(jsonResponse);
+        print("************");
+        print(event.snapshot.value[0]['Element'][0]['price']);
+        print("************");
+        print("-----------");*/
+  }
+
+  void parsedata(Event event) {
+    //for(int i =0;i<event.snapshot.value.)
+    print(event.snapshot.value[0]['Element'][0]['price']);
+  }
+}

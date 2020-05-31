@@ -56,7 +56,7 @@ class ElementData {
 
   factory ElementData.fromJson(Map<String, dynamic> parsedJson){
 
-    var list = parsedJson['Categories'] as List;
+    var list = parsedJson['VatozAS'] as List;
     print(list.runtimeType);
     List<Category> providersList = list.map((i) => Category.fromJson(i)).toList();
 
@@ -75,8 +75,15 @@ class Category {
   factory Category.fromJson(Map<String, dynamic> parsedJson){
 
     var list = parsedJson['Element'] as List;
-    print(list.runtimeType);
-    List<Element> providersList = list.map((i) => Element.fromJson(i)).toList();
+
+    List<Element> providersList = list.map((i) {
+      final Map<String, dynamic> data  = Map.from(i);
+      Element.fromJson(data);
+    }).toList();
+
+    print("ttttttttttttt");
+    print(providersList);
+    print("ttttttttttttt");
 
     return Category(
         id: parsedJson['id'],
