@@ -21,7 +21,6 @@ class QRExample extends StatefulWidget {
 class _QRExampleState extends State<QRExample> {
   GlobalKey qrKey = GlobalKey();
   QRViewController controller;
-  var qrText = "  Henüz tarama yapmadın";
 
   @override
   void initState() {
@@ -56,7 +55,6 @@ class _QRExampleState extends State<QRExample> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         print("QRCode: $scanData");
-
         Navigator.push(
           context,
           MaterialPageRoute(

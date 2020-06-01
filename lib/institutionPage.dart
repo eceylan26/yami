@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:yami/src/qr_code_variables.dart';
+import 'package:yami/qr_code_variables.dart';
 import 'package:sticky_and_expandable_list/sticky_and_expandable_list.dart';
 import 'mock_data.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -21,8 +21,7 @@ class InstitutionPage extends StatefulWidget {
 
 class InstitutionPageState extends State<InstitutionPage> {
   String qrCodeResult;
-  List<String> items;
-  ElementData menuData;
+
   Category menus;
   var sectionList;
   ElementData elem = new ElementData();
@@ -68,8 +67,10 @@ class InstitutionPageState extends State<InstitutionPage> {
                         SliverExpandableChildDelegate<String, ExampleSection>(
                       sectionList: sectionList,
                       itemBuilder: (context, sectionIndex, itemIndex, index) {
-                        String myitem =elem.data[sectionIndex].element[itemIndex].elementName;
-                        String price = elem.data[sectionIndex].element[itemIndex].price;
+                        String myitem = elem
+                            .data[sectionIndex].element[itemIndex].elementName;
+                        String price =
+                            elem.data[sectionIndex].element[itemIndex].price;
                         return GestureDetector(
                           onTap: () {
                             print(sectionIndex);
@@ -154,7 +155,6 @@ class InstitutionPageState extends State<InstitutionPage> {
                     ),
                   );
                 }
-
                 return CircularProgressIndicator();
               }),
         ),
@@ -169,55 +169,24 @@ class InstitutionPageState extends State<InstitutionPage> {
       parserQRCode(this.qrCodeResult);
     });
 
-    items = new List<String>();
-    items.add("Americano");
-    items.add("Sıcak Çikolota");
-    items.add("Filtre Kahve");
-    items.add("Türk Kahvesi");
-    items.add("Çay");
-    items.add("Kış Çayı");
-
     getTodoStream(restaurantName);
   }
 
   Future getTodoStream(String todoKey) async {
     final DBREf = FirebaseDatabase.instance.reference().child(todoKey);
+
     DBREf.once().then((DataSnapshot snapshot) {
       List<dynamic> list = snapshot.value;
 
       for (int i = 0; i < list.length; i++) {
         Map<dynamic, dynamic> map = Map.from(list[i]);
         final Map<String, dynamic> data = Map.from(map);
-
         menus = new Category.fromJson(data);
         elem.setData(menus);
-
-
       }
 
       sectionList = MockData.getExampleSections(3, 2, elem);
-
-
     });
-
-    /*DatabaseReference post = FirebaseDatabase.instance
-        .reference()
-        .child("VatozAS");
-
-    post.once().then((DataSnapshot snap){
-      print("errrrr");
-      print(snap.value.toString());
-      List<String> aa = List.castFrom(snap.value);
-      print("errrrr");
-      //ElementData menu = new ElementData.fromJson(snap.value);
-    });*/
-
-    /*//final jsonResponse=json.decode(event.snapshot);
-        //print(jsonResponse);
-        print("************");
-        print(event.snapshot.value[0]['Element'][0]['price']);
-        print("************");
-        print("-----------");*/
   }
 
   List<String> getCategories(ElementData elem) {
@@ -239,31 +208,6 @@ class InstitutionPageState extends State<InstitutionPage> {
 
     print(restaurantName);
     print(tableNumber);
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-
-  final TabBar _tabBar;
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return new Container(
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
   }
 }
 
