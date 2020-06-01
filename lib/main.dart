@@ -1,178 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:twitter_qr_scanner/twitter_qr_scanner.dart';
+import 'package:twitter_qr_scanner/QrScannerOverlayShape.dart';
 import 'package:yami/institutionPage.dart';
-import 'package:yami/qr_code_scanner.dart';
-import 'package:yami/src/qr_code_variables.dart';
-import 'package:flutter_json_widget/flutter_json_widget.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
-void main() => runApp(MaterialApp(home: QRViewExample()));
-
-const flashOn = 'FLASH ON';
-const flashOff = 'FLASH OFF';
-const frontCamera = 'FRONT CAMERA';
-const backCamera = 'BACK CAMERA';
-
-class QRViewExample extends StatefulWidget {
-  const QRViewExample({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _QRViewExampleState();
+void main(){
+  runApp( MaterialApp(
+    home:QRExample(),
+  ));
 }
 
-class _QRViewExampleState extends State<QRViewExample> {
-  var qrText = '';
-  var flashState = flashOn;
-  var cameraState = frontCamera;
-  QRViewController controller;
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+class QRExample extends StatefulWidget {
+  QRExample({Key key, this.title}) : super(key: key);
+
+  final String title;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  _QRExampleState createState() => _QRExampleState();
+}
 
-      body: Column(
-        children: <Widget>[
-
-          Expanded(
-            flex: 4,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              overlay: QrScannerOverlayShape(
-                borderColor: Colors.red,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutSize: 300,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('This is the result of scan: $qrText'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.all(8),
-                        child: RaisedButton(
-                          onPressed: () {
-                            if (controller != null) {
-                              controller.toggleFlash();
-                              if (_isFlashOn(flashState)) {
-                                setState(() {
-                                  flashState = flashOff;
-                                });
-                              } else {
-                                setState(() {
-                                  flashState = flashOn;
-                                });
-                              }
-                            }
-                          },
-                          child:
-                              Text(flashState, style: TextStyle(fontSize: 20)),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(8),
-                        child: RaisedButton(
-                          onPressed: () {
-                            if (controller != null) {
-                              controller.flipCamera();
-                              if (_isBackCamera(cameraState)) {
-                                setState(() {
-                                  cameraState = frontCamera;
-                                });
-                              } else {
-                                setState(() {
-                                  cameraState = backCamera;
-                                });
-                              }
-                            }
-                          },
-                          child:
-                              Text(cameraState, style: TextStyle(fontSize: 20)),
-                        ),
-                      )
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.all(8),
-                        child: RaisedButton(
-                          onPressed: () {
-                            controller?.pauseCamera();
-                          },
-                          child: Text('pause', style: TextStyle(fontSize: 20)),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(8),
-                        child: RaisedButton(
-                          onPressed: () {
-                            controller?.resumeCamera();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    InstitutionPage(qrCodeResult: "http://yami.com/stackhouse/2"),
-                              ),
-                            );
-                          },
-                          child: Text('resume', style: TextStyle(fontSize: 20)),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
+class _QRExampleState extends State<QRExample> {
+  GlobalKey qrKey = GlobalKey();
+  QRViewController controller;
+  var qrText = "  Henüz tarama yapmadın";
 
   @override
   void initState() {
     super.initState();
-
-    // dummy code
-
   }
 
-  bool _isFlashOn(String current) {
-    return flashOn == current;
-  }
-
-  bool _isBackCamera(String current) {
-    return backCamera == current;
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        qrText = scanData;
-      });
-    });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.black,
+        body: QRView(
+          key: qrKey,
+          overlay: QrScannerOverlayShape(
+              borderRadius: 16,
+              borderColor: Colors.white,
+              borderLength: 120,
+              borderWidth: 10,
+              cutOutSize: 250),
+          onQRViewCreated: _onQRViewCreate,
+          data: "QR TEXT",
+        ));
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    controller?.dispose();
     super.dispose();
+  }
+
+  void _onQRViewCreate(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        print("QRCode: $scanData");
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                InstitutionPage(qrCodeResult: scanData),
+          ),
+        );
+      });
+
+    });
   }
 }
