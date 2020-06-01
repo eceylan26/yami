@@ -1,15 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_json_widget/flutter_json_widget.dart';
 import 'package:yami/src/qr_code_variables.dart';
 import 'package:sticky_and_expandable_list/sticky_and_expandable_list.dart';
 import 'mock_data.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class InstitutionPage extends StatefulWidget {
   final qrCodeResult;
@@ -28,7 +23,9 @@ class InstitutionPageState extends State<InstitutionPage> {
   String qrCodeResult;
   List<String> items;
   ElementData menuData;
+  Category menus;
   var sectionList;
+  ElementData elem = new ElementData();
 
   InstitutionPageState(this.qrCodeResult);
 
@@ -58,93 +55,108 @@ class InstitutionPageState extends State<InstitutionPage> {
               ),
             ];
           },
-          body: ExpandableListView(
-            builder: SliverExpandableChildDelegate<String, ExampleSection>(
-              sectionList: sectionList,
-              itemBuilder: (context, sectionIndex, itemIndex, index) {
-                String myitem =
-                    menuData.data[sectionIndex].element[itemIndex].elementName;
-                String price =
-                    menuData.data[sectionIndex].element[itemIndex].price;
-                return GestureDetector(
-                  onTap: () {
-                    print(sectionIndex);
-                  },
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(22),
-                          bottomLeft: Radius.circular(22),
-                          topLeft: Radius.circular(22),
-                          topRight: Radius.circular(22)),
-                    ),
-                    margin: EdgeInsets.fromLTRB(25, 1, 25, 1),
-                    color: Colors.white,
-                    elevation: 5,
-                    child: Container(
-                      height: 40.0,
-                      color: Colors.white,
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
+          body: StreamBuilder(
+              stream: FirebaseDatabase.instance
+                  .reference()
+                  .child("todoKey")
+                  .once()
+                  .asStream(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData) {
+                  return ExpandableListView(
+                    builder:
+                        SliverExpandableChildDelegate<String, ExampleSection>(
+                      sectionList: sectionList,
+                      itemBuilder: (context, sectionIndex, itemIndex, index) {
+                        String myitem =elem.data[sectionIndex].element[itemIndex].elementName;
+                        String price = elem.data[sectionIndex].element[itemIndex].price;
+                        return GestureDetector(
+                          onTap: () {
+                            print(sectionIndex);
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(22),
+                                  bottomLeft: Radius.circular(22),
+                                  topLeft: Radius.circular(22),
+                                  topRight: Radius.circular(22)),
+                            ),
+                            margin: EdgeInsets.fromLTRB(25, 1, 25, 1),
+                            color: Colors.white,
+                            elevation: 5,
                             child: Container(
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(20, 7, 0, 0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: <Widget>[
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        myitem,
-                                        style: TextStyle(
-                                          fontFamily: 'Exo',
-                                          fontWeight: FontWeight.bold,
+                              height: 40.0,
+                              color: Colors.white,
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 3,
+                                    child: Container(
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 7, 0, 0),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: <Widget>[
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: Text(
+                                                myitem,
+                                                style: TextStyle(
+                                                  fontFamily: 'Exo',
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            )
+                                          ],
                                         ),
                                       ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
-                                child: Text(
-                                  price,
-                                  style: TextStyle(
-                                    fontFamily: 'Exo',
-                                    fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Container(
+                                      alignment: Alignment.centerRight,
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(0, 0, 20, 0),
+                                        child: Text(
+                                          price,
+                                          style: TextStyle(
+                                            fontFamily: 'Exo',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ],
+                        );
+                      },
+                      sectionBuilder: (context, containerInfo) =>
+                          _SectionWidget(
+                        section: sectionList[containerInfo.sectionIndex],
+                        containerInfo: containerInfo,
+                        onStateChanged: () {
+                          //notify ExpandableListView that expand state has changed.
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() {});
+                            }
+                          });
+                        },
                       ),
                     ),
-                  ),
-                );
-              },
-              sectionBuilder: (context, containerInfo) => _SectionWidget(
-                section: sectionList[containerInfo.sectionIndex],
-                containerInfo: containerInfo,
-                onStateChanged: () {
-                  //notify ExpandableListView that expand state has changed.
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  });
-                },
-              ),
-            ),
-          ),
+                  );
+                }
+
+                return CircularProgressIndicator();
+              }),
         ),
       ),
     );
@@ -165,21 +177,47 @@ class InstitutionPageState extends State<InstitutionPage> {
     items.add("Çay");
     items.add("Kış Çayı");
 
-    //dummy json
-    var myjson2 =
-        '''{"VatozAS":[{"id":1,"name":"Drink","Element":[{"name":"Tea","price":"5 TL","info":"Early Gray"},{"name":"Coffee Americano","price":"10 TL","info":"Filtre Coffee"}]},{"id":2,"name":"Food","Element":[{"name":"Salata","price":"10 TL","info":"Domates,Biber,Sogan"},{"name":"Bonfile Et","price":"25 TL","info":"Patetes Kızartmasıyla"}]},{"id":3,"name":"Dessert","Element":[{"name":"Mozail Tatlı","price":"15 TL","info":"Çikolata kaplı"},{"name":"CheeseCake","price":"20 TL","info":"Cafemizin gözdesi"}]}]}''';
-    jsonObj = jsonDecode(myjson2);
+    getTodoStream(restaurantName);
+  }
 
-    final jsonResponse = json.decode(myjson2);
-    print("erson");
-    print(jsonResponse);
-    print("erson");
-    menuData = new ElementData.fromJson(jsonResponse);
+  Future getTodoStream(String todoKey) async {
+    final DBREf = FirebaseDatabase.instance.reference().child(todoKey);
+    DBREf.once().then((DataSnapshot snapshot) {
+      List<dynamic> list = snapshot.value;
 
-    sectionList = MockData.getExampleSections(
-        menuData.data.length, menuData.data[0].element.length, menuData);
+      for (int i = 0; i < list.length; i++) {
+        Map<dynamic, dynamic> map = Map.from(list[i]);
+        final Map<String, dynamic> data = Map.from(map);
 
-    FirebaseTodos.getTodoStream("-KriJ8Sg4lWIoNswKWc4");
+        menus = new Category.fromJson(data);
+        elem.setData(menus);
+
+
+      }
+
+      sectionList = MockData.getExampleSections(3, 2, elem);
+
+
+    });
+
+    /*DatabaseReference post = FirebaseDatabase.instance
+        .reference()
+        .child("VatozAS");
+
+    post.once().then((DataSnapshot snap){
+      print("errrrr");
+      print(snap.value.toString());
+      List<String> aa = List.castFrom(snap.value);
+      print("errrrr");
+      //ElementData menu = new ElementData.fromJson(snap.value);
+    });*/
+
+    /*//final jsonResponse=json.decode(event.snapshot);
+        //print(jsonResponse);
+        print("************");
+        print(event.snapshot.value[0]['Element'][0]['price']);
+        print("************");
+        print("-----------");*/
   }
 
   List<String> getCategories(ElementData elem) {
@@ -352,63 +390,5 @@ class __SectionWidgetState extends State<_SectionWidget>
       sizeFactor: _heightFactor,
       child: widget.containerInfo.content,
     );
-  }
-}
-
-class FirebaseTodos {
-  /// FirebaseTodos.getTodoStream("-KriJ8Sg4lWIoNswKWc4", _updateTodo)
-  /// .then((StreamSubscription s) => _subscriptionTodo = s);
-  static Future<StreamSubscription<Event>> getTodoStream(String todoKey) async {
-    /*StreamSubscription<Event> subscription = FirebaseDatabase.instance
-        .reference()
-        .child("VatozAS")
-        .onValue.listen((Event event) {
-            print("-----------");
-            print(event.snapshot.value);
-
-
-    });*/
-
-    final DBREf = FirebaseDatabase.instance.reference().child("MCDonalds");
-
-    DBREf.once().then((DataSnapshot snapshot) {
-      List<dynamic> list = snapshot.value;
-
-      Map<dynamic, dynamic> map = Map.from(list[0]);
-
-      final Map<String, dynamic> data = Map.from(map);
-
-      var mylist = data['Element'] as List;
-
-      print(mylist.toString());
-
-      Category aa = new Category.fromJson(data);
-
-      print(aa.catName);
-    });
-
-    /*DatabaseReference post = FirebaseDatabase.instance
-        .reference()
-        .child("VatozAS");
-
-    post.once().then((DataSnapshot snap){
-      print("errrrr");
-      print(snap.value.toString());
-      List<String> aa = List.castFrom(snap.value);
-      print("errrrr");
-      //ElementData menu = new ElementData.fromJson(snap.value);
-    });*/
-
-    /*//final jsonResponse=json.decode(event.snapshot);
-        //print(jsonResponse);
-        print("************");
-        print(event.snapshot.value[0]['Element'][0]['price']);
-        print("************");
-        print("-----------");*/
-  }
-
-  void parsedata(Event event) {
-    //for(int i =0;i<event.snapshot.value.)
-    print(event.snapshot.value[0]['Element'][0]['price']);
   }
 }

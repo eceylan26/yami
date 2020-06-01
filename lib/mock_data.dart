@@ -13,7 +13,7 @@ class MockData {
       var section = ExampleSection()
         ..header = elem.data[i].catName.toString()
         ..items = List.generate(itemSize, (index) => "List tile #$index")
-        ..expanded = false;
+        ..expanded = true;
       sections.add(section);
     }
     return sections;
@@ -51,42 +51,31 @@ class ExampleSection implements ExpandableListSection<String> {
 }
 
 class ElementData {
-  final List<Category> data;
-  ElementData({this.data});
+  List<Category> data = new List<Category>();
 
-  factory ElementData.fromJson(Map<String, dynamic> parsedJson){
-
-    var list = parsedJson['VatozAS'] as List;
-    print(list.runtimeType);
-    List<Category> providersList = list.map((i) => Category.fromJson(i)).toList();
-
-    return ElementData(
-        data: providersList
-    );
+  void setData(Category cat){
+    data.add(cat);
   }
+
 }
 
 class Category {
-  final int id;
   final String catName;
-  final List<Element> element;
-  Category({this.id, this.catName, this.element});
+  final List<Element> element ;
+  Category({ this.catName, this.element});
 
   factory Category.fromJson(Map<String, dynamic> parsedJson){
 
-    var list = parsedJson['Element'] as List;
+    List<dynamic>  list = parsedJson['Element'] as List;
 
-    List<Element> providersList = list.map((i) {
-      final Map<String, dynamic> data  = Map.from(i);
-      Element.fromJson(data);
-    }).toList();
+    List<Element> providersList = new List<Element>();
 
-    print("ttttttttttttt");
-    print(providersList);
-    print("ttttttttttttt");
+    for(int i = 0 ;i<list.length;i++){
+      Map<String, dynamic> data  = Map.from(list[i]);
+      providersList.add(Element.fromJson(data));
+    }
 
     return Category(
-        id: parsedJson['id'],
         catName: parsedJson['name'],
         element: providersList
     );
@@ -100,9 +89,10 @@ class Element {
   Element({this.price, this.elementName, this.info});
 
   factory Element.fromJson(Map<String, dynamic> parsedJson){
+
     return Element(
-        elementName:parsedJson['name'],
         price:parsedJson['price'],
+        elementName:parsedJson['name'],
         info:parsedJson['info']
     );
   }
